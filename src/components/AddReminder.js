@@ -1,143 +1,91 @@
 import React, { useState } from 'react';
-import { Pill, Clock, CheckCircle } from 'lucide-react';
 import axios from 'axios';
+import { Plus, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const AddReminder = () => {
-  const [formData, setFormData] = useState({
-    medication: '',
-    time: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(null);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const [medication, setMedication] = useState('');
+  const [time, setTime] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState({ type: '', content: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.medication.trim() || !formData.time.trim()) {
-      setError('Please fill in both fields');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
+    setSubmitting(true);
+    setMessage({ type: '', content: '' });
 
     try {
-      await axios.post('/api/save_reminder', formData);
-      setSuccess(true);
-      setFormData({ medication: '', time: '' });
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
-      setError('Failed to schedule reminder. Please try again.');
-      console.error('Error scheduling reminder:', err);
+      await axios.post('/api/save_reminder', { medication, time });
+      setMessage({ type: 'success', content: 'Reminder added successfully!' });
+      setMedication('');
+      setTime('');
+    } catch (error) {
+      setMessage({ type: 'error', content: 'Failed to add reminder. Please try again.' });
+      console.error('Error adding reminder:', error);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
+      setTimeout(() => setMessage({ type: '', content: '' }), 4000);
     }
   };
 
   return (
-    <div className="p-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-            <Pill className="text-blue-500" size={28} />
-            Add Reminder
-          </h1>
-          <p className="text-gray-600 mt-2">Schedule a new medication reminder</p>
-        </div>
-
-        {/* Success Message */}
-        {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-green-800">
-              <CheckCircle size={20} />
-              <span className="font-medium">Reminder scheduled successfully!</span>
+    <div className="p-8 flex items-center justify-center bg-background min-h-screen">
+      <div className="max-w-md w-full">
+        <div className="bg-surface rounded-xl shadow-lg p-8 border border-primary/10">
+          <div className="flex flex-col items-center mb-6">
+            <div className="bg-primary p-3 rounded-full mb-3">
+              <Plus size={24} className="text-white" />
             </div>
+            <h1 className="text-2xl font-bold text-text-primary">Add New Reminder</h1>
+            <p className="text-text-secondary mt-1">Fill in the details below to add a new medication reminder.</p>
           </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
-
-        {/* Form */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="medication" className="block text-sm font-medium text-gray-700 mb-2">
-                💊 Medication Name
+              <label htmlFor="medication" className="block text-sm font-medium text-text-primary mb-1">
+                Medication Name
               </label>
               <input
-                type="text"
                 id="medication"
-                name="medication"
-                value={formData.medication}
-                onChange={handleChange}
-                placeholder="e.g., Aspirin, Vitamin D"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={loading}
+                type="text"
+                value={medication}
+                onChange={(e) => setMedication(e.target.value)}
+                placeholder="e.g., Ibuprofen"
+                required
+                className="w-full px-4 py-2 bg-background border border-surface rounded-lg focus:ring-primary focus:border-primary"
               />
             </div>
-
             <div>
-              <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
-                ⏰ Time
+              <label htmlFor="time" className="block text-sm font-medium text-text-primary mb-1">
+                Time (HH:MM)
               </label>
               <input
-                type="text"
                 id="time"
-                name="time"
-                value={formData.time}
-                onChange={handleChange}
-                placeholder="e.g., 8 PM, 20:00, 2024-01-15 20:00"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={loading}
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                required
+                className="w-full px-4 py-2 bg-background border border-surface rounded-lg focus:ring-primary focus:border-primary"
               />
             </div>
-
-            {/* Time Format Examples */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Time Format Examples:</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-                <div>• 8 PM</div>
-                <div>• 20:00</div>
-                <div>• 2024-01-15 20:00</div>
-                <div>• Tomorrow 9 AM</div>
-              </div>
-            </div>
-
             <button
               type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={submitting}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-sm hover:bg-primary-dark transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Scheduling...
-                </>
-              ) : (
-                <>
-                  <Clock size={16} />
-                  Schedule Reminder
-                </>
-              )}
+              {submitting ? 'Submitting...' : 'Add Reminder'}
+              <Plus size={18} />
             </button>
           </form>
+
+          {message.content && (
+            <div className={`mt-6 p-3 rounded-lg flex items-center gap-3 text-sm ${
+                message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+              }`}
+            >
+              {message.type === 'success' ? <CheckCircle size={20} /> : <AlertTriangle size={20} />}
+              <span>{message.content}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

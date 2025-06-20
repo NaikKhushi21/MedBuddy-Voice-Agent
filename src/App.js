@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Pill, Plus, MessageSquare, Home, Trash2 } from 'lucide-react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { Pill, Plus, MessageSquare, LayoutDashboard } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import AddReminder from './components/AddReminder';
 import Chat from './components/Chat';
@@ -8,7 +8,7 @@ import Chat from './components/Chat';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <AppContent />
       </div>
     </Router>
@@ -16,17 +16,10 @@ function App() {
 }
 
 function AppContent() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const [activePage, setActivePage] = useState('dashboard');
-
-  const handleNavigation = (page) => {
-    setActivePage(page);
-    navigate(`/${page === 'dashboard' ? '' : page}`);
-  };
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { id: 'add-reminder', label: 'Add Reminder', icon: Plus, path: '/add-reminder' },
     { id: 'chat', label: 'Chat', icon: MessageSquare, path: '/chat' },
   ];
@@ -34,46 +27,58 @@ function AppContent() {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg">
+      <aside className="w-64 bg-surface shadow-lg flex flex-col border-r border-primary/10">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <Pill className="text-blue-500" size={28} />
-            MedBuddy
-          </h1>
-          <p className="text-gray-600 text-sm mt-1">Medication Reminder Assistant</p>
+          <div className="flex items-center gap-3">
+            <div className="bg-primary p-2 rounded-lg">
+              <Pill className="text-white" size={24} />
+            </div>
+            <h1 className="text-xl font-bold text-text-primary">
+              MedBuddy
+            </h1>
+          </div>
         </div>
         
-        <nav className="mt-6">
+        <nav className="mt-4 flex-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname.startsWith(item.path);
             
             return (
-              <button
+              <a 
+                href={item.path}
                 key={item.id}
-                onClick={() => handleNavigation(item.id)}
-                className={`w-full flex items-center gap-3 px-6 py-3 text-left transition-colors ${
+                className={`flex items-center gap-3 px-6 mx-4 my-1 py-2.5 rounded-lg text-left transition-all duration-200 ease-in-out font-medium ${
                   isActive
-                    ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-text-secondary hover:bg-primary/20 hover:text-primary'
                 }`}
               >
                 <Icon size={20} />
-                <span className="font-medium">{item.label}</span>
-              </button>
+                <span className="text-sm">{item.label}</span>
+              </a>
             );
           })}
         </nav>
-      </div>
+        <div className="p-4">
+          <div className="bg-background rounded-lg p-4 text-center border border-surface">
+            <p className="text-sm text-text-secondary">Having trouble?</p>
+            <a href="#" className="text-sm font-medium text-primary hover:underline">
+              Contact Support
+            </a>
+          </div>
+        </div>
+      </aside>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-y-auto">
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Navigate replace to="/dashboard" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/add-reminder" element={<AddReminder />} />
           <Route path="/chat" element={<Chat />} />
         </Routes>
-      </div>
+      </main>
     </div>
   );
 }
