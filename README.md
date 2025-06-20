@@ -2,6 +2,9 @@
 
 A modern React frontend for the MedBuddy medication reminder assistant.
 
+## Demo
+[Watch the demo here](https://www.canva.com/design/DAGq25rkCI0/EluzvxQ5DQzYYWRbVKDC2A/watch?utm_content=DAGq25rkCI0&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h46abf15725)
+
 ## Features
 
 - **Modern UI**: Clean, responsive design with Tailwind CSS
